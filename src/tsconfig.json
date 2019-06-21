@@ -12,18 +12,18 @@
         "experimentalDecorators": true,
         "noEmitOnError": false,
         "lib": [
-          "es2017",
-          "dom",
-          "es6"
+            "es2017",
+            "dom",
+            "es6"
         ],
         "baseUrl": ".",
         "paths": {
             "*": [
-                "../demo/node_modules/tns-core-modules/*",
-                "../demo/node_modules/*"
+                "./node_modules/tns-core-modules/*",
+                "./node_modules/*"
             ]
         },
-      "skipLibCheck": true
+        "skipLibCheck": true
     },
     "files": [
         "videoplayer.d.ts",
