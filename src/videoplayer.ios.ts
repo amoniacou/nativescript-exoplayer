@@ -24,6 +24,7 @@ export class Video extends VideoBase {
     private _didPlayToEndTimeActive: boolean;
     private _observer: NSObject;
     private _observerActive: boolean;
+    private _observerPlayerActive: boolean;
     private _videoLoaded: boolean;
     private _playbackTimeObserver: any;
     private _playbackTimeObserverActive: boolean;
@@ -40,12 +41,12 @@ export class Video extends VideoBase {
         let output = audioSession.currentRoute.outputs.lastObject.portType;
         if (output.match(/Receiver/)) {
             try {
-              audioSession.setCategoryError(AVAudioSessionCategoryPlayAndRecord);
-              audioSession.overrideOutputAudioPortError(AVAudioSessionPortOverride.Speaker);
-              audioSession.setActiveError(true);
-              //console.log("audioSession category set and active");
+                audioSession.setCategoryError(AVAudioSessionCategoryPlayAndRecord);
+                audioSession.overrideOutputAudioPortError(AVAudioSessionPortOverride.Speaker);
+                audioSession.setActiveError(true);
+                //console.log("audioSession category set and active");
             } catch (err) {
-              //console.log("setting audioSession category failed");
+                //console.log("setting audioSession category failed");
             }
         }
 
@@ -57,6 +58,7 @@ export class Video extends VideoBase {
         this.nativeView = this._playerController.view;
         this._observer = PlayerObserverClass.alloc();
         this._observer["_owner"] = this;
+        this._addPlayerObserver(this._player);
         this._videoFinished = false;
 
         // subtitles setup
@@ -76,18 +78,18 @@ export class Video extends VideoBase {
     }
 
     [fillProperty.setNative](value: VideoFill) {
-      let videoGravity = AVLayerVideoGravityResize; // default
-      switch (value) {
-        case VideoFill.aspect:
-          videoGravity = AVLayerVideoGravityResizeAspect;
-          break;
-        case VideoFill.aspectFill:
-          videoGravity = AVLayerVideoGravityResizeAspectFill;
-          break;
-      }
-      if (this._playerController) {
-        this._playerController.videoGravity = videoGravity;
-      }
+        let videoGravity = AVLayerVideoGravityResize; // default
+        switch (value) {
+            case VideoFill.aspect:
+                videoGravity = AVLayerVideoGravityResizeAspect;
+                break;
+            case VideoFill.aspectFill:
+                videoGravity = AVLayerVideoGravityResizeAspectFill;
+                break;
+        }
+        if (this._playerController) {
+            this._playerController.videoGravity = videoGravity;
+        }
     }
 
     [subtitleSourceProperty.setNative](value: NSString) {
@@ -157,7 +159,7 @@ export class Video extends VideoBase {
         }
     }
 
-    private _setupSubtitleLabel(){
+    private _setupSubtitleLabel() {
         let contentOverlayView = this._playerController.contentOverlayView;
         this._subtitleLabel = new UILabel();
         this._subtitleLabelContainer = new UIView();
@@ -176,7 +178,7 @@ export class Video extends VideoBase {
         let containerViewsDictionary = new NSDictionary([this._subtitleLabel], ['subtitleLabel']);
 
         this._subtitleLabelContainer.addConstraints(NSLayoutConstraint.constraintsWithVisualFormatOptionsMetricsViews("H:|-(5)-[subtitleLabel]-(5)-|", NSLayoutFormatOptions.DirectionLeadingToTrailing, null, containerViewsDictionary));
-        this._subtitleLabelContainer.addConstraints(NSLayoutConstraint.constraintsWithVisualFormatOptionsMetricsViews("V:|-(0)-[subtitleLabel]-(0)-|", NSLayoutFormatOptions.DirectionLeadingToTrailing , null, containerViewsDictionary));
+        this._subtitleLabelContainer.addConstraints(NSLayoutConstraint.constraintsWithVisualFormatOptionsMetricsViews("V:|-(0)-[subtitleLabel]-(0)-|", NSLayoutFormatOptions.DirectionLeadingToTrailing, null, containerViewsDictionary));
 
 
         this._subtitleLabel.textColor = UIColor.whiteColor;
@@ -189,9 +191,9 @@ export class Video extends VideoBase {
 
         let viewsDictionary = new NSDictionary([this._subtitleLabelContainer, contentOverlayView], ['subtitleLabelContainer', 'superview']);
         // make 20 point insets from sides
-        contentOverlayView.addConstraints(NSLayoutConstraint.constraintsWithVisualFormatOptionsMetricsViews("H:|-(>=20)-[subtitleLabelContainer]-(>=20)-|", 0 , null, viewsDictionary));
+        contentOverlayView.addConstraints(NSLayoutConstraint.constraintsWithVisualFormatOptionsMetricsViews("H:|-(>=20)-[subtitleLabelContainer]-(>=20)-|", 0, null, viewsDictionary));
         // center text
-        contentOverlayView.addConstraints(NSLayoutConstraint.constraintsWithVisualFormatOptionsMetricsViews("V:[superview]-(<=1)-[subtitleLabelContainer]",  NSLayoutFormatOptions.AlignAllCenterX, null, viewsDictionary));
+        contentOverlayView.addConstraints(NSLayoutConstraint.constraintsWithVisualFormatOptionsMetricsViews("V:[superview]-(<=1)-[subtitleLabelContainer]", NSLayoutFormatOptions.AlignAllCenterX, null, viewsDictionary));
         // add 30 point margin from bottom
         contentOverlayView.addConstraints(NSLayoutConstraint.constraintsWithVisualFormatOptionsMetricsViews("V:[subtitleLabelContainer]-(20)-|", 0, null, viewsDictionary));
     }
@@ -280,6 +282,7 @@ export class Video extends VideoBase {
     public destroy() {
 
         this._removeStatusObserver(this._player.currentItem);
+        this._removePlayerObserver(this._player)
 
         if (this._didPlayToEndTimeActive) {
             ios.removeNotificationObserver(this._didPlayToEndTimeObserver, AVPlayerItemDidPlayToEndTimeNotification);
@@ -301,6 +304,11 @@ export class Video extends VideoBase {
         currentItem.addObserverForKeyPathOptionsContext(this._observer, "status", 0, null);
     }
 
+    private _addPlayerObserver(player) {
+        this._observerPlayerActive = true;
+        player.addObserverForKeyPathOptionsContext(this._observer, 'rate', NSKeyValueObservingOptions.Old | NSKeyValueObservingOptions.New, null);
+    }
+
     private _removeStatusObserver(currentItem) {
         // If the observer is active, then we need to remove it...
         if (!this._observerActive) { return; }
@@ -309,6 +317,11 @@ export class Video extends VideoBase {
         if (currentItem) {
             currentItem.removeObserverForKeyPath(this._observer, "status");
         }
+    }
+
+    private _removePlayerObserver(player) {
+        this._observerPlayerActive = false;
+        player.removeObserverForKeyPath(this._observer, 'status');
     }
 
     private _addPlaybackTimeObserver() {
@@ -346,6 +359,12 @@ export class Video extends VideoBase {
         this._emit(VideoBase.playbackStartEvent);
     }
 
+
+    playbackPause() {
+        this._videoPlaying = false;
+        this._emit(VideoBase.playbackPauseEvent);
+    }
+
 }
 
 class PlayerObserverClass extends NSObject {
@@ -353,6 +372,16 @@ class PlayerObserverClass extends NSObject {
         if (path === "status") {
             if (this["_owner"]._player.currentItem.status === AVPlayerItemStatus.ReadyToPlay && !this["_owner"]._videoLoaded) {
                 this["_owner"].playbackReady();
+            }
+        }
+
+        if (path === 'rate') {
+            const owner = (this as any).owner as Video;
+            if (this["_owner"]._player && change.valueForKey('new') === 1 && change.valueForKey('old') === 0) {
+                this["_owner"].playbackStart();
+            }
+            if (this["_owner"] && change.valueForKey('new') === 0 && change.valueForKey('old') === 1) {
+                this["_owner"].playbackPause();
             }
         }
     }

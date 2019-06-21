@@ -41,7 +41,7 @@ export class Video extends VideoBase {
 	private _boundStop = this.suspendEvent.bind(this);
 	private enableSubtitles: boolean = false;
 
-	public TYPE = {DETECT: 0, SS: 1, DASH: 2, HLS: 3, OTHER: 4};
+	public TYPE = { DETECT: 0, SS: 1, DASH: 2, HLS: 3, OTHER: 4 };
 	public nativeView: any;
 
 
@@ -228,6 +228,15 @@ export class Video extends VideoBase {
 				}
 			},
 			onVideoSizeChanged: function (width, height /*, unappliedRotationDegrees, pixelWidthHeightRatio */) {
+				if (this.owner) {
+					this.owner.videoWidth = width;
+					this.owner.videoHeight = height;
+					if (this.owner.fill !== VideoFill.aspectFill) {
+						this.owner._setupAspectRatio();
+					}
+				}
+			},
+			onSurfaceSizeChanged: function (width, height) {
 				if (this.owner) {
 					this.owner.videoWidth = width;
 					this.owner.videoHeight = height;
