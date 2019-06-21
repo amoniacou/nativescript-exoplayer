@@ -2,17 +2,17 @@
   "nativescript": {
     "id": "org.nativescript.demo",
     "tns-android": {
-      "version": "3.1.1"
+      "version": "5.0.0"
     },
     "tns-ios": {
-      "version": "5.1.1"
+      "version": "5.0.0"
     }
   },
   "dependencies": {
     "nativescript-exoplayer": "file:../src",
     "nativescript-theme-core": "~1.0.2",
     "tns-core-modules": "^5.2.0",
-    "tns-platform-declarations": "^5.2.0"
+    "tns-platform-declarations": "^5.4.3"
   },
   "devDependencies": {
     "babel-traverse": "6.4.5",
