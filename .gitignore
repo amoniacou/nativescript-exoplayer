@@ -36,3 +36,5 @@ package-lock.json
 !src/videoplayer.d.ts
 !src/subtitle-source/subtitle-source.d.ts
 !src/video-source/video-source.d.ts
+!src/references.d.ts
+!src/scripts/*.js
