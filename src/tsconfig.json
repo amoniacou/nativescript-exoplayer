@@ -12,7 +12,6 @@
         "experimentalDecorators": true,
         "noEmitOnError": false,
         "lib": [
-            "es2017",
             "dom",
             "es6"
         ],
@@ -25,20 +24,9 @@
         },
         "skipLibCheck": true
     },
-    "files": [
-        "videoplayer.d.ts",
-        "videoplayer-common.ts",
-        "videoplayer.ios.ts",
-        "videoplayer.android.ts",
-        "subtitle-source/subtitle-source-common.ts",
-        "subtitle-source/subtitle-source.ios.ts",
-        "subtitle-source/subtitle-source.android.ts",
-        "video-source/video-source-common.ts",
-        "video-source/video-source.ios.ts",
-        "video-source/video-source.android.ts"
-    ],
     "exclude": [
         "node_modules",
-        "platforms"
+        "typings/android.d.ts",
+        "**/*.spec.ts"
     ]
 }
