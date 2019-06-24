@@ -367,6 +367,7 @@ export class Video extends VideoBase {
 
 	private openFullscreenDialog(view): void {
 		console.log('open fullscreen dialog:')
+		this._emit(VideoBase.enterFullscreenEvent);
 		if (!this._mFullScreenDialog) {
 			this._mFullScreenDialog = new android.app.Dialog(this._context, android.R.style.Theme_NoTitleBar_Fullscreen)
 		}
@@ -392,6 +393,7 @@ export class Video extends VideoBase {
 
 	private closeFullscreenDialog(view): void {
 		console.log('close fullscreen dialog:')
+		this._emit(VideoBase.leaveFullscreenEvent);
 		this.preSeekTime = this.mediaPlayer.getCurrentPosition();
 		this._textureView.getParent().removeView(this._textureView);
 		this.initTextureView();

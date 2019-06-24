@@ -85,6 +85,8 @@ export class Video extends View {
     public static playbackReadyEvent: string = "playbackReady";
     public static playbackStartEvent: string = "playbackStart";
     public static playbackPauseEvent: string = "playbackPause";
+    public static enterFullscreenEvent: string = "enterFullscreen";
+    public static leaveFullscreenEvent: string = "leaveFullscreen";
     public static seekToTimeCompleteEvent: string = "seekToTimeComplete";
     public static currentTimeUpdatedEvent: string = "currentTimeUpdated";
 
