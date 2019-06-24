@@ -388,6 +388,10 @@ export class Video extends VideoBase {
 		this.mediaController.setPlayer(this.mediaPlayer);
 		this._mExoPlayerFullscreen = true;
 		this._mFullScreenDialog.show();
+		if (this.eventPlaybackStart) {
+			this.eventPlaybackStart = false;
+			this.play()
+		}
 		console.log('full screen shown');
 	}
 
@@ -409,6 +413,10 @@ export class Video extends VideoBase {
 		this.mediaController.setPlayer(this.mediaPlayer);
 		this._mExoPlayerFullscreen = false;
 		this._mFullScreenDialog.dismiss();
+		if (this.eventPlaybackStart) {
+			this.eventPlaybackStart = false;
+			this.play()
+		}
 	}
 
 	private _setupAspectRatio(): void {
