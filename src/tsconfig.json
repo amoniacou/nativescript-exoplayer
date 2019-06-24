@@ -25,6 +25,7 @@
         "skipLibCheck": true
     },
     "files": [
+        "references.d.ts",
         "videoplayer.d.ts",
         "videoplayer-common.ts",
         "videoplayer.ios.ts",
