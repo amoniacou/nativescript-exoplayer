@@ -1,8 +1,21 @@
 //default elements
 android {
-    
+    compileSdkVersion 28
+    compileOptions {
+        sourceCompatibility 1.8
+        targetCompatibility 1.8
+    }
+}
+
+project.ext {
+  googlePlayServicesVersion = "15.0.0"
+  useAndroidX = false
 }
 
 dependencies {
+    def supportVer = "28.0.0"
+    compile "com.android.support:support-v4:$supportVer"
+    compile "com.android.support:appcompat-v7:$supportVer"
+    compile "com.android.support:design:$supportVer"
     implementation 'com.google.android.exoplayer:exoplayer:2.9.6'
 }

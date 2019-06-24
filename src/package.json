@@ -89,6 +89,11 @@
     "build": "npm run tsc && npm run build.native",
     "build.native": "node scripts/build-native.js",
     "plugin.prepare": "npm run build && cd ../demo && tns plugin remove nativescript-exoplayer && tns plugin add ../src",
+    "plugin.link": "npm link && cd ../demo && npm link nativescript-exoplayer && cd ../src",
+    "demo.ios": "npm i && npm run tsc && cd ../demo && tns run ios --syncAllFiles",
+    "demo.android": "npm i && npm run tsc && cd ../demo && tns run android --syncAllFiles",
+    "demo.reset": "cd ../demo && rimraf platforms",
+    "clean": "cd ../demo && rimraf hooks node_modules platforms && cd ../src && rimraf node_modules && npm run plugin.link",
     "prepack": "npm run build.native"
   },
   "devDependencies": {

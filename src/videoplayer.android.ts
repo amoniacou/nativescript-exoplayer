@@ -3,6 +3,7 @@
 import { Video as VideoBase, VideoFill, videoSourceProperty, subtitleSourceProperty } from "./videoplayer-common";
 import * as nsUtils from "tns-core-modules/utils/utils";
 import * as nsApp from "tns-core-modules/application";
+import { Frame, topmost } from "tns-core-modules/ui/frame";
 
 export * from "./videoplayer-common";
 
@@ -40,6 +41,9 @@ export class Video extends VideoBase {
 	private _boundStart = this.resumeEvent.bind(this);
 	private _boundStop = this.suspendEvent.bind(this);
 	private enableSubtitles: boolean = false;
+	private _mExoPlayerFullscreen: boolean = false;
+	private _mFullScreenDialog;
+	private _dialogView;
 
 	public TYPE = { DETECT: 0, SS: 1, DASH: 2, HLS: 3, OTHER: 4 };
 	public nativeView: any;
@@ -115,12 +119,7 @@ export class Video extends VideoBase {
 
 	public createNativeView(): any {
 		const nativeView = new android.widget.RelativeLayout(this._context);
-		this._textureView = new android.view.TextureView(this._context);
-		this._textureView.setFocusable(true);
-		this._textureView.setFocusableInTouchMode(true);
-		this._textureView.requestFocus();
-		nativeView.addView(this._textureView);
-
+		
 		if (this.enableSubtitles) {
 			this._subtitlesView = new com.google.android.exoplayer2.ui.SubtitleView(this._context);
 			this._subtitlesView.setUserDefaultStyle();
@@ -128,14 +127,15 @@ export class Video extends VideoBase {
 			nativeView.addView(this._subtitlesView);
 		}
 
-
 		return nativeView;
 	}
 
-	public initNativeView(): void {
-		super.initNativeView();
+	public initTextureView(): void {
 		let that = new WeakRef(this);
-		this._setupMediaController();
+		this._textureView = new android.view.TextureView(this._context);
+		this._textureView.setFocusable(true);
+		this._textureView.setFocusableInTouchMode(true);
+		
 		this._textureView.setOnTouchListener(new android.view.View.OnTouchListener({
 			get owner(): Video {
 				return that.get();
@@ -166,6 +166,7 @@ export class Video extends VideoBase {
 
 				onSurfaceTextureDestroyed: function (/* surface */) {
 					// after we return from this we can't use the surface any more
+					console.log('surface texture destroyed')
 					if (!this.owner) {
 						return true;
 					}
@@ -187,7 +188,16 @@ export class Video extends VideoBase {
 				}
 			}
 		));
+		this._textureView.requestFocus();
+	}
 
+	public initNativeView(): void {
+		super.initNativeView();
+		this.initTextureView();
+		this.nativeView.addView(this._textureView);
+		let that = new WeakRef(this);
+		this._setupMediaController();
+		
 		nsApp.on(nsApp.suspendEvent, this._boundStop);
 		nsApp.on(nsApp.resumeEvent, this._boundStart);
 
@@ -285,7 +295,8 @@ export class Video extends VideoBase {
 					}
 					if (playWhenReady && !this.owner.eventPlaybackStart) {
 						this.owner.eventPlaybackStart = true;
-						// this.owner._emit(VideoBase.playbackStartEvent);
+						console.log("EMIIIIIIITTT PLAAYYYYY")
+						this.owner._emit(VideoBase.playbackStartEvent);
 					}
 				} else if (playbackState === STATE_ENDED) {
 					if (!this.owner.loop) {
@@ -321,6 +332,26 @@ export class Video extends VideoBase {
 		if (this.controls !== false || this.controls === undefined) {
 			if (this.mediaController == null) {
 				this.mediaController = new com.google.android.exoplayer2.ui.PlaybackControlView(this._context);
+				console.log('GET FULLSCREEN BUUTTON ID')
+				const fButton = this.mediaController.getChildAt(0).getChildAt(1).getChildAt(3);
+				let that = new WeakRef(this);
+				fButton.setOnClickListener(new android.view.View.OnClickListener({
+					get owner(): Video {
+						return that.get();
+					},
+					onClick: function (view, event) {
+						if (this.owner) {
+							if (!this.owner._mExoPlayerFullscreen) {
+								this.owner.openFullscreenDialog(view);
+							} else {
+								this.owner.closeFullscreenDialog(view);
+							}
+							console.log("Show a full screen!")
+						}
+						return false;
+					}
+				}))
+				//console.log(this.mediaController.findViewById(android.R.id.exo_fullscreen_icon))
 				this.nativeView.addView(this.mediaController);
 
 				let params = this.mediaController.getLayoutParams();
@@ -332,6 +363,50 @@ export class Video extends VideoBase {
 				return;
 			}
 		}
+	}
+
+	private openFullscreenDialog(view): void {
+		console.log('open fullscreen dialog:')
+		if (!this._mFullScreenDialog) {
+			this._mFullScreenDialog = new android.app.Dialog(this._context, android.R.style.Theme_NoTitleBar_Fullscreen)
+		}
+		this.preSeekTime = this.mediaPlayer.getCurrentPosition();
+		this._dialogView = new android.widget.RelativeLayout(this._context);
+		this._mFullScreenDialog.setContentView(this._dialogView);
+		this._textureView.getParent().removeView(this._textureView);
+		this.initTextureView();
+		this._dialogView.addView(this._textureView);
+		this._openVideo()
+		this.mediaPlayer.seekTo(this.mediaPlayer.getCurrentPosition() + 1);
+		if (this.enableSubtitles) {
+			this._subtitlesView.getParent().removeView(this._subtitlesView);
+			this._dialogView.addView(this._subtitlesView);
+		}
+		this.mediaController.getParent().removeView(this.mediaController);
+		this._dialogView.addView(this.mediaController);
+		this.mediaController.setPlayer(this.mediaPlayer);
+		this._mExoPlayerFullscreen = true;
+		this._mFullScreenDialog.show();
+		console.log('full screen shown');
+	}
+
+	private closeFullscreenDialog(view): void {
+		console.log('close fullscreen dialog:')
+		this.preSeekTime = this.mediaPlayer.getCurrentPosition();
+		this._textureView.getParent().removeView(this._textureView);
+		this.initTextureView();
+		this.nativeView.addView(this._textureView);
+		this._openVideo()
+		this.mediaPlayer.seekTo(this.mediaPlayer.getCurrentPosition() + 1);
+		if (this.enableSubtitles) {
+			this._subtitlesView.getParent().removeView(this._subtitlesView);
+			this.nativeView.addView(this._subtitlesView);
+		}
+		this.mediaController.getParent().removeView(this.mediaController);
+		this.nativeView.addView(this.mediaController);
+		this.mediaController.setPlayer(this.mediaPlayer);
+		this._mExoPlayerFullscreen = false;
+		this._mFullScreenDialog.dismiss();
 	}
 
 	private _setupAspectRatio(): void {
@@ -543,6 +618,7 @@ export class Video extends VideoBase {
 	}
 
 	public play(): void {
+		console.log('start play video on android!')
 		if (!this.mediaPlayer || this.mediaState === SURFACE_WAITING) {
 			this._openVideo();
 		} else if (this.playState === STATE_ENDED) {
@@ -660,9 +736,20 @@ export class Video extends VideoBase {
 		}
 	}
 
+	private reset(): void {
+		this._suspendLocation = this.getCurrentTime();
+		this.release();
+		this.seekToTime(this._suspendLocation);
+		this._suspendLocation = 0;
+		this._openVideo();
+	}
+
 	public suspendEvent(): void {
 		this._suspendLocation = this.getCurrentTime();
 		this.release();
+		this.seekToTime(this._suspendLocation);
+		this._suspendLocation = 0;
+		this._openVideo();
 	}
 
 	public resumeEvent(): void {
