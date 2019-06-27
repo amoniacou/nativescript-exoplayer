@@ -267,7 +267,7 @@ export class Video extends VideoBase {
 				console.error("PlayerError", error);
 			},
 			onPlayerStateChanged: function (playWhenReady, playbackState) {
-				// console.log("OnPlayerStateChanged", playWhenReady, playbackState);
+				//console.log("OnPlayerStateChanged", playWhenReady, playbackState);
 				if (!this.owner) {
 					return;
 				}
@@ -294,11 +294,11 @@ export class Video extends VideoBase {
 						} while (this.owner._onReadyEmitEvent.length);
 					}
 					if (playWhenReady) {
-						if (!this.owner.eventPlaybackStart) {
-							this.owner.eventPlaybackStart = true;
-						}
 						console.log("EMIIIIIIITTT PLAAYYYYY")
 						this.owner._emit(VideoBase.playbackStartEvent);
+					}
+					if (playWhenReady && !this.owner.eventPlaybackStart) {
+						this.owner.eventPlaybackStart = true;
 					}
 				} else if (playbackState === STATE_ENDED) {
 					if (!this.owner.loop) {

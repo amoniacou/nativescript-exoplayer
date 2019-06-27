@@ -19,11 +19,11 @@ function onSrcPropertyChanged(view, oldValue, newValue) {
         video["_url"] = value;
         video.isLoadingProperty = true;
         if (isFileOrResourcePath(value)) {
-            video.videoSource = videoSource.fromFileOrResource(value);
+            video.videoSource = (<any>videoSource).fromFileOrResource(value);
             video.isLoadingProperty = false;
         } else {
             if (video["_url"] === value) {
-                video.videoSource = videoSource.fromUrl(value);
+                video.videoSource = (<any>videoSource).fromUrl(value);
                 video.isLoadingProperty = false;
             }
         }
