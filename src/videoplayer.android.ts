@@ -267,7 +267,7 @@ export class Video extends VideoBase {
 				console.error("PlayerError", error);
 			},
 			onPlayerStateChanged: function (playWhenReady, playbackState) {
-				//console.log("OnPlayerStateChanged", playWhenReady, playbackState);
+				console.log("OnPlayerStateChanged", playWhenReady, playbackState);
 				if (!this.owner) {
 					return;
 				}
