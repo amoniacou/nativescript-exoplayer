@@ -119,7 +119,7 @@ export class Video extends VideoBase {
 
 	public createNativeView(): any {
 		const nativeView = new android.widget.RelativeLayout(this._context);
-		
+
 		if (this.enableSubtitles) {
 			this._subtitlesView = new com.google.android.exoplayer2.ui.SubtitleView(this._context);
 			this._subtitlesView.setUserDefaultStyle();
@@ -135,7 +135,7 @@ export class Video extends VideoBase {
 		this._textureView = new android.view.TextureView(this._context);
 		this._textureView.setFocusable(true);
 		this._textureView.setFocusableInTouchMode(true);
-		
+
 		this._textureView.setOnTouchListener(new android.view.View.OnTouchListener({
 			get owner(): Video {
 				return that.get();
@@ -197,7 +197,7 @@ export class Video extends VideoBase {
 		this.nativeView.addView(this._textureView);
 		let that = new WeakRef(this);
 		this._setupMediaController();
-		
+
 		nsApp.on(nsApp.suspendEvent, this._boundStop);
 		nsApp.on(nsApp.resumeEvent, this._boundStart);
 
@@ -293,8 +293,10 @@ export class Video extends VideoBase {
 							this.owner._emit(this.owner._onReadyEmitEvent.shift());
 						} while (this.owner._onReadyEmitEvent.length);
 					}
-					if (playWhenReady && !this.owner.eventPlaybackStart) {
-						this.owner.eventPlaybackStart = true;
+					if (playWhenReady) {
+						if (!this.owner.eventPlaybackStart) {
+							this.owner.eventPlaybackStart = true;
+						}
 						console.log("EMIIIIIIITTT PLAAYYYYY")
 						this.owner._emit(VideoBase.playbackStartEvent);
 					}
