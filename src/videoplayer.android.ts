@@ -296,8 +296,6 @@ export class Video extends VideoBase {
 					if (playWhenReady) {
 						console.log("EMIIIIIIITTT PLAAYYYYY")
 						this.owner._emit(VideoBase.playbackStartEvent);
-					}
-					if (playWhenReady && !this.owner.eventPlaybackStart) {
 						this.owner.eventPlaybackStart = true;
 					}
 				} else if (playbackState === STATE_ENDED) {
@@ -344,9 +342,9 @@ export class Video extends VideoBase {
 					onClick: function (view, event) {
 						if (this.owner) {
 							if (!this.owner._mExoPlayerFullscreen) {
-								this.owner.openFullscreenDialog(view);
+								this.owner.openFullscreenDialog(this.owner.eventPlaybackStart);
 							} else {
-								this.owner.closeFullscreenDialog(view);
+								this.owner.closeFullscreenDialog(this.owner.eventPlaybackStart);
 							}
 							console.log("Show a full screen!")
 						}
@@ -367,8 +365,9 @@ export class Video extends VideoBase {
 		}
 	}
 
-	private openFullscreenDialog(view): void {
+	private openFullscreenDialog(startToPlay): void {
 		console.log('open fullscreen dialog:')
+		this.pause();
 		this._emit(VideoBase.enterFullscreenEvent);
 		if (!this._mFullScreenDialog) {
 			this._mFullScreenDialog = new android.app.Dialog(this._context, android.R.style.Theme_NoTitleBar_Fullscreen)
@@ -390,15 +389,17 @@ export class Video extends VideoBase {
 		this.mediaController.setPlayer(this.mediaPlayer);
 		this._mExoPlayerFullscreen = true;
 		this._mFullScreenDialog.show();
-		if (this.eventPlaybackStart) {
-			this.eventPlaybackStart = false;
-			this.play()
+		if (startToPlay) {
+			setTimeout(() => {
+				this.play()
+			}, 500)
 		}
 		console.log('full screen shown');
 	}
 
-	private closeFullscreenDialog(view): void {
+	private closeFullscreenDialog(startToPlay): void {
 		console.log('close fullscreen dialog:')
+		this.pause()
 		this._emit(VideoBase.leaveFullscreenEvent);
 		this.preSeekTime = this.mediaPlayer.getCurrentPosition();
 		this._textureView.getParent().removeView(this._textureView);
@@ -415,9 +416,10 @@ export class Video extends VideoBase {
 		this.mediaController.setPlayer(this.mediaPlayer);
 		this._mExoPlayerFullscreen = false;
 		this._mFullScreenDialog.dismiss();
-		if (this.eventPlaybackStart) {
-			this.eventPlaybackStart = false;
-			this.play()
+		if (startToPlay) {
+			setTimeout(() => {
+				this.play()
+			}, 500)
 		}
 	}
 
