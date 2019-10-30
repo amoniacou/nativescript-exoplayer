@@ -1,5 +1,5 @@
-import types = require("utils/types");
-import fs = require("file-system");
+import types = require("tns-core-modules/utils/types");
+import fs = require("tns-core-modules/file-system");
 import common = require("./subtitle-source-common");
 import definition = require("./subtitle-source");
 

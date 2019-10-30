@@ -1,4 +1,4 @@
-import utils = require("utils/utils");
+import utils = require("tns-core-modules/utils/utils");
 
 // This is used for definition purposes only, it does not generate JavaScript for it.
 import definition = require("./video-source");
