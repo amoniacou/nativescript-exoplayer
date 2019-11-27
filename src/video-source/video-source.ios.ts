@@ -1,7 +1,7 @@
-import types = require("utils/types");
-import fs = require("file-system");
+import types = require("tns-core-modules/utils/types");
+import fs = require("tns-core-modules/file-system");
 import common = require("./video-source-common");
-import enums = require("ui/enums");
+import enums = require("tns-core-modules/ui/enums");
 import definition = require("./video-source");
 
 declare var android, AVPlayerItem, NSBundle, NSURL;
